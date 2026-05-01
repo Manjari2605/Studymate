@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StudyMate AI — Quizzes</title>
+  <link rel="stylesheet" href="/static/styles/main.css"/>
+  <style>
+    .quiz-setup{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px}
+    .quiz-setup h2{font-family:var(--font-display);font-weight:700;font-size:18px;margin-bottom:20px}
+    .form-row{display:flex;gap:12px;align-items:flex-end}
+    .form-group{display:flex;flex-direction:column;gap:6px;flex:1}
+    .form-group label{font-size:12px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.8px}
+    .form-input{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:11px 16px;color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;transition:border-color .2s}
+    .form-input:focus{border-color:var(--accent)66}
+    .form-input::placeholder{color:var(--muted)}
+    select.form-input option{background:var(--surface)}
+
+    .quiz-area{display:flex;flex-direction:column;gap:16px}
+    .q-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;animation:cardIn .3s ease}
+    @keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .q-num{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+    .q-text{font-size:15px;font-weight:500;margin-bottom:18px;line-height:1.6}
+    .q-options{display:flex;flex-direction:column;gap:8px}
+    .q-opt{padding:11px 16px;border-radius:10px;border:1px solid var(--border);cursor:pointer;transition:all .2s;font-size:14px;text-align:left;background:var(--surface2);color:var(--text)}
+    .q-opt:hover:not(:disabled){border-color:var(--accent)66;background:#7c6dfa10}
+    .q-opt.correct{border-color:var(--accent3);background:#6dfacc14;color:var(--accent3);cursor:default}
+    .q-opt.wrong{border-color:var(--accent2);background:#fa6d8f10;color:var(--accent2);cursor:default}
+    .q-opt:disabled{cursor:default}
+    .q-explanation{margin-top:14px;padding:12px 16px;background:var(--surface2);border-radius:10px;font-size:13px;color:var(--muted);border-left:3px solid var(--accent);display:none;line-height:1.6}
+
+    .score-banner{background:linear-gradient(135deg,#7c6dfa18,#fa6d8f10);border:1px solid #7c6dfa30;border-radius:16px;padding:28px;text-align:center;display:none}
+    .score-banner.show{display:block}
+    .score-banner h2{font-family:var(--font-display);font-size:24px;font-weight:800;margin-bottom:8px}
+    .score-banner p{color:var(--muted);font-size:14px;margin-bottom:20px}
+    .score-num{font-family:var(--font-display);font-size:48px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+    .loading{text-align:center;padding:48px;color:var(--muted);display:none}
+    .loading.show{display:block}
+    .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+<div class="orb orb1"></div><div class="orb orb2"></div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">
+      <a href="/" class="logo-icon">📚</a>
+      <a href="/" class="logo-text">Study<span>Mate</span></a>
+    </div>
+    <div class="nav-label">Menu</div>
+    <a href="/" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload Notes
+    </a>
+    <a href="/ask" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Ask AI
+    </a>
+    <a href="/quizzes" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Quizzes
+    </a>
+  </aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>Generate a <span>Quiz</span></h1>
+        <p>AI builds questions directly from your notes</p>
+      </div>
+      <div class="avatar">S</div>
+    </div>
+
+    <!-- Setup -->
+    <div class="quiz-setup">
+      <h2>What do you want to be quizzed on?</h2>
+      <div class="form-row">
+        <div class="form-group" style="flex:2">
+          <label>Topic</label>
+          <input class="form-input" id="topicInput" placeholder="e.g. RAG, LLM,"/>
+        </div>
+        <div class="form-group">
+          <label>Questions</label>
+          <select class="form-input" id="numQ">
+            <option value="3">3 questions</option>
+            <option value="5" selected>5 questions</option>
+            <option value="10">10 questions</option>
+          </select>
+        </div>
+        <button class="btn-primary" onclick="generateQuiz()" style="height:44px;white-space:nowrap">Generate Quiz ✦</button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Generating your quiz from notes…</p>
+    </div>
+
+    <!-- Quiz -->
+    <div class="quiz-area" id="quizArea"></div>
+
+    <!-- Score -->
+    <div class="score-banner" id="scoreBanner">
+      <div class="score-num" id="scoreNum">0/0</div>
+      <h2>Quiz complete!</h2>
+      <p id="scoreMsg"></p>
+      <button class="btn-primary" onclick="resetQuiz()">Try Another Topic</button>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let quizData    = [];
+let answered    = 0;
+let correct     = 0;
+let total       = 0;
+
+function showToast(msg,type="error"){const t=document.getElementById("toast");t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.className="toast",3000)}
+
+async function generateQuiz(){
+  const topic = document.getElementById("topicInput").value.trim();
+  const numQ  = parseInt(document.getElementById("numQ").value);
+  if(!topic){ showToast("Please enter a topic","error"); return; }
+
+  document.getElementById("loading").className    = "loading show";
+  document.getElementById("quizArea").innerHTML   = "";
+  document.getElementById("scoreBanner").className = "score-banner";
+  quizData = []; answered = 0; correct = 0;
+
+  try {
+    const res  = await fetch("/api/chat/quiz", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({topic, num_questions: numQ})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.detail||"Failed");
+    if(!data.quiz||data.quiz.length===0){ showToast("No relevant notes found for this topic","error"); return; }
+
+    quizData = data.quiz;
+    total    = quizData.length;
+    renderQuiz();
+  } catch(e){
+    showToast("Error: "+e.message, "error");
+  } finally {
+    document.getElementById("loading").className = "loading";
+  }
+}
+
+function renderQuiz(){
+  const area = document.getElementById("quizArea");
+  area.innerHTML = "";
+
+  quizData.forEach((q, i) => {
+    const card = document.createElement("div");
+    card.className = "q-card";
+    card.id = `q-${i}`;
+
+    const opts = q.options.map((opt, j) => {
+      const letter = ["A","B","C","D"][j];
+      return `<button class="q-opt" onclick="selectOpt(this,${i},'${letter}','${q.answer}')">${opt}</button>`;
+    }).join("");
+
+    card.innerHTML = `
+      <div class="q-num">Question ${i+1} of ${total}</div>
+      <div class="q-text">${q.question}</div>
+      <div class="q-options">${opts}</div>
+      <div class="q-explanation" id="exp-${i}"></div>
+    `;
+    area.appendChild(card);
+  });
+}
+
+async function selectOpt(btn, qIdx, selected, correct_ans){
+  const card = document.getElementById(`q-${qIdx}`);
+  const opts  = card.querySelectorAll(".q-opt");
+  opts.forEach(o => o.disabled = true);
+
+  const letters = ["A","B","C","D"];
+  opts.forEach((o, i) => {
+    if(letters[i] === correct_ans) o.classList.add("correct");
+    else if(letters[i] === selected && selected !== correct_ans) o.classList.add("wrong");
+  });
+
+  if(selected === correct_ans) correct++;
+  answered++;
+
+  // Fetch explanation
+  const expDiv = document.getElementById(`exp-${qIdx}`);
+  expDiv.style.display = "block";
+  expDiv.textContent   = "Loading explanation…";
+  try {
+    const res  = await fetch("/api/chat/explain", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({question: quizData[qIdx].question, answer: correct_ans})
+    });
+    const data = await res.json();
+    expDiv.textContent = "💡 " + data.explanation;
+  } catch(e){
+    expDiv.textContent = "Could not load explanation.";
+  }
+
+  if(answered === total) setTimeout(showScore, 800);
+}
+
+function showScore(){
+  const pct = Math.round((correct/total)*100);
+  document.getElementById("scoreNum").textContent = `${correct}/${total}`;
+  let msg = pct===100 ? "Perfect score! Outstanding work 🎉" :
+            pct>=70   ? "Great job! Keep it up 💪" :
+            pct>=50   ? "Good effort. Review your notes and try again 📖" :
+                        "Keep studying — you'll get there! 🔥";
+  document.getElementById("scoreMsg").textContent = msg;
+  document.getElementById("scoreBanner").className = "score-banner show";
+  document.getElementById("scoreBanner").scrollIntoView({behavior:"smooth"});
+}
+
+function resetQuiz(){
+  document.getElementById("quizArea").innerHTML    = "";
+  document.getElementById("scoreBanner").className = "score-banner";
+  document.getElementById("topicInput").value      = "";
+  quizData=[]; answered=0; correct=0; total=0;
+}
+
+document.getElementById("topicInput").addEventListener("keydown", e=>{ if(e.key==="Enter") generateQuiz(); });
+</script>
+</body>
+</html>

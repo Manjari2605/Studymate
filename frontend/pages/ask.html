@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StudyMate AI — Ask AI</title>
+  <link rel="stylesheet" href="/static/styles/main.css"/>
+  <style>
+    .chat-wrap{display:flex;flex-direction:column;flex:1;gap:0}
+    .chat-panel{background:var(--surface);border:1px solid var(--border);border-radius:20px;display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:500px}
+    .panel-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .panel-title{font-family:var(--font-display);font-weight:700;font-size:15px}
+    .status-dot{width:8px;height:8px;border-radius:50%;background:var(--accent3);box-shadow:0 0 8px var(--accent3);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .chat-messages{flex:1;padding:24px;display:flex;flex-direction:column;gap:18px;overflow-y:auto}
+    .msg{display:flex;gap:12px;animation:msgIn .3s ease}
+    @keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .msg.user{flex-direction:row-reverse}
+    .msg-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+    .msg.ai .msg-avatar{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+    .msg.user .msg-avatar{background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+    .msg-bubble{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:13px 16px;font-size:14px;line-height:1.7;max-width:78%}
+    .msg.user .msg-bubble{background:linear-gradient(135deg,#7c6dfa22,#fa6d8f14);border-color:var(--accent)30}
+    .msg-label{color:var(--accent3);display:block;margin-bottom:5px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+    .chat-input-row{padding:18px 22px;border-top:1px solid var(--border);display:flex;gap:10px}
+    .chat-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;transition:border-color .2s;resize:none;height:48px}
+    .chat-input:focus{border-color:var(--accent)66}
+    .chat-input::placeholder{color:var(--muted)}
+    .send-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;width:48px;height:48px;border-radius:12px;cursor:pointer;font-size:18px;transition:all .2s;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+    .send-btn:hover{transform:scale(1.05);box-shadow:0 4px 16px #7c6dfa55}
+    .send-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .typing{display:flex;gap:5px;padding:4px 0;align-items:center}
+    .typing span{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:bounce .8s infinite}
+    .typing span:nth-child(2){animation-delay:.15s}
+    .typing span:nth-child(3){animation-delay:.3s}
+    @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+    .suggestions{display:flex;flex-wrap:wrap;gap:8px;padding:0 24px 16px}
+    .sug{background:var(--surface2);border:1px solid var(--border);padding:7px 14px;border-radius:20px;font-size:13px;color:var(--muted);cursor:pointer;transition:all .2s}
+    .sug:hover{border-color:var(--accent)44;color:var(--text)}
+  </style>
+</head>
+<body>
+<div class="orb orb1"></div><div class="orb orb2"></div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">
+      <a href="/" class="logo-icon">📚</a>
+      <a href="/" class="logo-text">Study<span>Mate</span></a>
+    </div>
+    <div class="nav-label">Menu</div>
+    <a href="/" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload Notes
+    </a>
+    <a href="/ask" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Ask AI
+    </a>
+    <a href="/quizzes" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Quizzes
+    </a>
+  </aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>Ask the <span>AI</span></h1>
+        <p>Questions answered from your uploaded notes</p>
+      </div>
+      <div class="avatar">S</div>
+    </div>
+
+    <div class="chat-panel">
+      <div class="panel-header">
+        <div class="panel-title">AI Study Assistant</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)">
+          <div class="status-dot"></div> Online
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg ai">
+          <div class="msg-avatar">AI</div>
+          <div class="msg-bubble">
+            <span class="msg-label">StudyMate</span>
+            Hi! I've learned from your uploaded notes. Ask me any question about your study material and I'll answer from your notes
+          </div>
+        </div>
+      </div>
+
+      <div class="suggestions" id="suggestions">
+        <div class="sug" onclick="fillSug(this)">Explain RAG</div>
+        <div class="sug" onclick="fillSug(this)">What is NLP?</div>
+        <div class="sug" onclick="fillSug(this)">What is transformers?</div>
+      </div>
+
+      <div class="chat-input-row">
+        <input class="chat-input" id="chatInput" placeholder="Ask anything from your notes…" onkeydown="handleKey(event)"/>
+        <button class="send-btn" id="sendBtn" onclick="sendMsg()">➤</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Generate a unique session ID for this chat session (persists while page is open)
+const SESSION_ID = "session_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+
+function showToast(msg,type="error"){const t=document.getElementById("toast");t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.className="toast",3000)}
+
+function fillSug(el){ document.getElementById("chatInput").value=el.textContent; document.getElementById("suggestions").style.display="none"; }
+
+function formatAnswer(text) {
+  // If text already has bullet points, return as-is
+  if (text.includes("•")) {
+    return text.replace(/\n/g, "<br>");
+  }
+  
+  // Convert lines that look like section headers to bullet points
+  // Pattern: "Definition: RAG is..." becomes "• Definition: RAG is..."
+  const lines = text.split("\n");
+  const formatted = lines.map(line => {
+    const trimmed = line.trim();
+    if (trimmed.length > 0 && (trimmed.includes(":") || trimmed.match(/^[A-Z]/))) {
+      return "• " + trimmed;
+    }
+    return trimmed;
+  }).filter(line => line.trim()).join("<br>");
+  
+  return formatted.replace(/\n/g, "<br>");
+}
+
+function appendMsg(role, html){
+  const msgs = document.getElementById("chatMessages");
+  const div  = document.createElement("div");
+  div.className = `msg ${role}`;
+  const avatarText = role==="ai" ? "AI" : "S";
+  const formattedHtml = role === "ai" ? formatAnswer(html) : html;
+  div.innerHTML = `<div class="msg-avatar">${avatarText}</div><div class="msg-bubble">${formattedHtml}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function showTyping(){
+  return appendMsg("ai", `<div class="typing"><span></span><span></span><span></span></div>`);
+}
+
+async function sendMsg(){
+  const input = document.getElementById("chatInput");
+  const btn   = document.getElementById("sendBtn");
+  const q     = input.value.trim();
+  if(!q) return;
+
+  document.getElementById("suggestions").style.display = "none";
+  appendMsg("user", q);
+  input.value = "";
+  btn.disabled = true;
+
+  const typingDiv = showTyping();
+
+  try {
+    const res  = await fetch("/api/chat/ask", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({question: q, session_id: SESSION_ID})
+    });
+    const data = await res.json();
+    typingDiv.remove();
+    appendMsg("ai", `<span class="msg-label">StudyMate</span>${data.answer}`);
+  } catch(e){
+    typingDiv.remove();
+    appendMsg("ai", `<span class="msg-label">Error</span>Could not reach the server. Make sure the backend is running.`);
+  } finally {
+    btn.disabled = false;
+    input.focus();
+  }
+}
+
+function handleKey(e){ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendMsg(); } }
+</script>
+</body>
+</html>

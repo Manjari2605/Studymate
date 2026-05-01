@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StudyMate AI — Upload Notes</title>
+  <link rel="stylesheet" href="/static/styles/main.css"/>
+  <style>
+    .drop-zone{border:2px dashed var(--border);border-radius:20px;padding:56px 40px;text-align:center;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+    .drop-zone:hover,.drop-zone.dragover{border-color:#7c6dfa66;background:#7c6dfa06}
+    .dz-icon{font-size:48px;margin-bottom:16px;display:block;animation:float 3s ease-in-out infinite}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    .dz-title{font-family:var(--font-display);font-size:20px;font-weight:700;margin-bottom:8px}
+    .dz-sub{color:var(--muted);font-size:14px;margin-bottom:24px;line-height:1.6}
+    .dz-sub span{color:var(--accent);font-weight:500}
+    .dz-formats{display:flex;justify-content:center;gap:8px;margin-bottom:24px}
+    .fmt-tag{background:var(--surface2);border:1px solid var(--border);padding:4px 12px;border-radius:20px;font-size:12px;color:var(--muted)}
+    .section-title{font-family:var(--font-display);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .section-title span{font-family:var(--font-body);font-size:12px;color:var(--muted);font-weight:400}
+    .file-list{display:flex;flex-direction:column;gap:10px}
+    .file-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;transition:all .2s;animation:cardIn .3s ease}
+    @keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .file-card:hover{border-color:#7c6dfa30;transform:translateX(2px)}
+    .file-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .file-icon.pdf{background:#fa6d8f18;border:1px solid #fa6d8f22}
+    .file-icon.txt{background:#7c6dfa18;border:1px solid #7c6dfa22}
+    .file-icon.docx{background:#6dfacc18;border:1px solid #6dfacc22}
+    .file-info{flex:1;min-width:0}
+    .file-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .file-meta{font-size:12px;color:var(--muted);margin-top:3px;display:flex;gap:10px;align-items:center}
+    .status-done{color:var(--accent3)}
+    .status-processing{color:var(--accent)}
+    .status-error{color:var(--accent2)}
+    .prog-wrap{margin-top:8px}
+    .prog-bar{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+    .prog-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s ease}
+    .delete-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;font-size:14px}
+    .delete-btn:hover{background:#fa6d8f18;border-color:#fa6d8f44;color:#fa6d8f}
+    .empty-state{text-align:center;padding:48px;color:var(--muted);font-size:14px}
+    .chat-cta{background:var(--surface);border:1px solid #7c6dfa30;border-radius:16px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;display:none}
+    .chat-cta.show{display:flex}
+    .chat-cta h3{font-family:var(--font-display);font-weight:700;font-size:15px;margin-bottom:4px}
+    .chat-cta p{font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+<div class="orb orb1"></div><div class="orb orb2"></div>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <a href="/" class="logo-icon">📚</a>
+      <a href="/" class="logo-text">Study<span>Mate</span></a>
+    </div>
+    <div class="nav-label">Menu</div>
+    <a href="/" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload Notes
+    </a>
+    <a href="/ask" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Ask AI
+    </a>
+    <a href="/quizzes" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Quizzes
+    </a>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>Upload your <span>Notes</span></h1>
+        <p>Add study material and let the AI learn from it</p>
+      </div>
+      <div class="avatar">S</div>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="drop-zone" id="dropZone">
+      <span class="dz-icon">📂</span>
+      <div class="dz-title">Drop your files here</div>
+      <div class="dz-sub">Drag & drop notes or <span>browse</span> to choose files<br>The AI will read and learn from everything you upload</div>
+      <div class="dz-formats">
+        <span class="fmt-tag">PDF</span>
+        <span class="fmt-tag">TXT</span>
+        <span class="fmt-tag">DOCX</span>
+      </div>
+      <button class="btn-primary" onclick="document.getElementById('fileInput').click()">Browse Files</button>
+      <input type="file" id="fileInput" multiple accept=".pdf,.txt,.docx" style="display:none" onchange="handleFiles(this.files)"/>
+    </div>
+
+    <!-- File list -->
+    <div>
+      <div class="section-title">
+        Uploaded Notes
+        <span id="fileCount">Loading…</span>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none">No notes uploaded yet. Drop your files above to get started!</div>
+      <div class="file-list" id="fileList"></div>
+    </div>
+
+    <!-- CTA -->
+    <div class="chat-cta" id="chatCta">
+      <div>
+        <h3>Notes ready! 🎉</h3>
+        <p>Your notes are indexed. Go ask the AI or generate a quiz.</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <a href="/ask"><button class="btn-primary">Ask AI →</button></a>
+        <a href="/quizzes"><button class="btn-secondary">Take Quiz</button></a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "";
+
+function showToast(msg, type="success"){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(()=> t.className="toast", 3000);
+}
+
+function fmtSize(b){ return b<1024*1024 ? (b/1024).toFixed(1)+"KB" : (b/(1024*1024)).toFixed(1)+"MB"; }
+function extOf(name){ return name.split(".").pop().toLowerCase(); }
+const iconMap = {pdf:"📄",txt:"📝",docx:"📃"};
+
+// Load existing notes from server
+async function loadNotes(){
+  try {
+    const res  = await fetch(`${API}/api/notes/`);
+    const data = await res.json();
+    renderServerNotes(data);
+  } catch(e){ showToast("Could not connect to server","error"); }
+}
+
+function renderServerNotes(notes){
+  const list  = document.getElementById("fileList");
+  const count = document.getElementById("fileCount");
+  const empty = document.getElementById("emptyState");
+  const cta   = document.getElementById("chatCta");
+
+  list.innerHTML = "";
+  count.textContent = notes.length + (notes.length===1?" file":" files");
+  empty.style.display = notes.length===0 ? "block" : "none";
+  cta.className = notes.length>0 ? "chat-cta show" : "chat-cta";
+
+  notes.forEach(n => {
+    const ext      = extOf(n.filename);
+    const fileSize = n.file_size || "—";
+    const card     = document.createElement("div");
+    card.className = "file-card";
+    card.innerHTML = `
+      <div class="file-icon ${ext}">${iconMap[ext]||"📄"}</div>
+      <div class="file-info">
+        <div class="file-name">${n.filename}</div>
+        <div class="file-meta">
+          <span>${n.subject}</span>
+          <span>${fileSize}</span>
+          <span class="status-done">✓ Ready</span>
+          <span>${n.created_at}</span>
+        </div>
+      </div>
+      <button class="delete-btn" onclick="deleteNote(${n.id},'${n.filename}',this)">✕</button>
+    `;
+    list.appendChild(card);
+  });
+}
+
+async function handleFiles(files){
+  for(const file of Array.from(files)){
+    await uploadFile(file);
+  }
+  // Reset input so same file can be selected again
+  document.getElementById("fileInput").value = "";
+  await loadNotes();
+}
+
+async function uploadFile(file){
+  const ext = extOf(file.name);
+  if(!["pdf","txt","docx"].includes(ext)){
+    showToast(`${file.name}: unsupported format`, "error");
+    return;
+  }
+
+  // Show uploading card
+  const tempId = "tmp-"+Date.now();
+  const list = document.getElementById("fileList");
+  const card = document.createElement("div");
+  card.id = tempId;
+  card.className = "file-card";
+  card.innerHTML = `
+    <div class="file-icon ${ext}">${iconMap[ext]||"📄"}</div>
+    <div class="file-info">
+      <div class="file-name">${file.name}</div>
+      <div class="file-meta"><span>${fmtSize(file.size)}</span><span class="status-processing">● Uploading…</span></div>
+      <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:60%"></div></div></div>
+    </div>
+  `;
+  list.prepend(card);
+
+  try {
+    const form = new FormData();
+    form.append("file", file);
+    const res  = await fetch(`${API}/api/notes/upload`, { method:"POST", body:form });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.detail||"Upload failed");
+    showToast(`${file.name} uploaded! (${data.chunks} chunks indexed)`, "success");
+  } catch(e){
+    showToast(`Error: ${e.message}`, "error");
+  } finally {
+    document.getElementById(tempId)?.remove();
+  }
+}
+
+async function deleteNote(id, filename, btn){
+  if(!confirm(`Delete "${filename}"?`)) return;
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${API}/api/notes/${id}`, {method:"DELETE"});
+    if(!res.ok) throw new Error("Delete failed");
+    showToast(`"${filename}" deleted`, "success");
+    await loadNotes();
+  } catch(e){
+    showToast(e.message, "error");
+    btn.disabled = false;
+  }
+}
+
+// Drag and drop
+const dz = document.getElementById("dropZone");
+dz.addEventListener("dragover", e=>{ e.preventDefault(); dz.classList.add("dragover"); });
+dz.addEventListener("dragleave", ()=> dz.classList.remove("dragover"));
+dz.addEventListener("drop", e=>{ e.preventDefault(); dz.classList.remove("dragover"); handleFiles(e.dataTransfer.files); });
+
+loadNotes();
+</script>
+</body>
+</html>
