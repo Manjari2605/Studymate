@@ -16,22 +16,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Startup
+# ✅ SAFE Startup (prevents crash)
 @app.on_event("startup")
 def startup():
-    os.makedirs("data/uploads", exist_ok=True)
-    os.makedirs("data/index", exist_ok=True)
-    init_db()
+    try:
+        os.makedirs("data", exist_ok=True)
+        os.makedirs("data/uploads", exist_ok=True)
+        os.makedirs("data/index", exist_ok=True)
+
+        init_db()
+        print("✅ Database initialized")
+
+    except Exception as e:
+        print("❌ Startup error:", e)
+
 
 # Routers
 app.include_router(notes.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 
-# ✅ SAFE static mount (prevents crash)
+# ✅ SAFE static mount
 if os.path.exists("frontend"):
     app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
-# ✅ SAFE routes (no crash if files missing)
+# ✅ SAFE routes
 @app.get("/")
 def serve_index():
     path = "frontend/pages/index.html"
