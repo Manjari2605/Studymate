@@ -8,6 +8,7 @@ import os
 
 app = FastAPI(title="StudyMate AI", version="1.0.0")
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,28 +16,42 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Startup
 @app.on_event("startup")
 def startup():
     os.makedirs("data/uploads", exist_ok=True)
     os.makedirs("data/index", exist_ok=True)
     init_db()
 
+# Routers
 app.include_router(notes.router, prefix="/api")
-app.include_router(chat.router,  prefix="/api")
+app.include_router(chat.router, prefix="/api")
 
-app.mount("/static", StaticFiles(directory="frontend"), name="static")
+# ✅ SAFE static mount (prevents crash)
+if os.path.exists("frontend"):
+    app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
+# ✅ SAFE routes (no crash if files missing)
 @app.get("/")
 def serve_index():
-    return FileResponse("frontend/pages/index.html")
+    path = "frontend/pages/index.html"
+    if os.path.exists(path):
+        return FileResponse(path)
+    return {"message": "StudyMate API running"}
 
 @app.get("/ask")
 def serve_ask():
-    return FileResponse("frontend/pages/ask.html")
+    path = "frontend/pages/ask.html"
+    if os.path.exists(path):
+        return FileResponse(path)
+    return {"message": "Ask page not found"}
 
 @app.get("/quizzes")
 def serve_quiz():
-    return FileResponse("frontend/pages/quiz.html")
+    path = "frontend/pages/quiz.html"
+    if os.path.exists(path):
+        return FileResponse(path)
+    return {"message": "Quiz page not found"}
 
 @app.get("/health")
 def health():
