@@ -1,11 +1,11 @@
 fastapi
-uvicorn
+uvicorn[standard]
 python-multipart
 python-dotenv
-faiss-cpu
-sentence-transformers
 huggingface_hub
 PyPDF2
 python-docx
 sqlalchemy
 aiofiles
+numpy
+scikit-learn
