@@ -8,6 +8,9 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 # Load HuggingFace API
 HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
 
+if not HF_TOKEN:
+    raise ValueError("HUGGINGFACE_TOKEN is not set")
+
 client = OpenAI(
     base_url="https://router.huggingface.co/v1",
     api_key=HF_TOKEN,
