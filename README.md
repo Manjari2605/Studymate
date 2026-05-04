@@ -1,110 +1,147 @@
-# StudyMate AI 📚
+# 📚 StudyMate AI
 
-A smart study assistant that lets students upload notes and get AI-powered answers and quizzes — built with FastAPI, FAISS, RAG, and Mistral-7B via Hugging Face.
+An AI-powered smart study assistant that allows students to upload notes, ask questions, and generate quizzes using Retrieval-Augmented Generation (RAG).
 
 ---
 
-## Project Structure
+## 🚀 Features
 
-```
+- 📄 Upload study materials (PDF, DOCX, TXT)
+- 🤖 Ask questions from your notes
+- 🧠 Context-aware AI answers (RAG-based)
+- 📝 Automatic quiz generation
+- 💬 Conversational learning assistant
+
+---
+
+## 📁 Project Structure
+
 studymate/
-├── main.py                          # FastAPI app entry point
+├── main.py
 ├── requirements.txt
-├── .env                             # Your HuggingFace token goes here
+├── .env
 │
 ├── backend/
 │   ├── models/
-│   │   └── database.py             # SQLite models (Note, Chunk, Quiz)
+│   │   └── database.py
 │   ├── routers/
-│   │   ├── notes.py                # Upload, list, delete notes
-│   │   └── chat.py                 # Ask AI, generate quiz, explain
+│   │   ├── notes.py
+│   │   └── chat.py
 │   ├── services/
-│   │   ├── vector_store.py         # FAISS indexing & search
-│   │   └── llm_service.py          # Mistral-7B via HuggingFace API
+│   │   ├── vector_store.py
+│   │   └── llm_service.py
 │   └── utils/
-│       └── text_extractor.py       # PDF / DOCX / TXT text extraction + chunking
+│       └── text_extractor.py
 │
 ├── frontend/
 │   ├── styles/
-│   │   └── main.css                # Shared styles
+│   │   └── main.css
 │   └── pages/
-│       ├── index.html              # Upload Notes page
-│       ├── ask.html                # Ask AI chat page
-│       └── quiz.html               # Quiz generation page
+│       ├── index.html
+│       ├── ask.html
+│       └── quiz.html
 │
-└── data/                           # Auto-created at runtime
-    ├── uploads/                    # Uploaded files stored here
-    ├── index/                      # FAISS index stored here
-    └── studymate.db                # SQLite database
-```
+└── data/
+    ├── uploads/
+    ├── index/
+    └── studymate.db
 
 ---
 
-## Setup
+## ⚙️ Setup Instructions
 
-### 1. Clone / open in VS Code
-Open the `studymate/` folder in VS Code.
+### 1. Clone the repository
+git clone <your-repo-url>
+cd studymate
 
-### 2. Create a virtual environment
-```bash
+### 2. Create virtual environment
 python -m venv venv
-# Windows:
+
+# Windows
 venv\Scripts\activate
-# Mac/Linux:
+
+# Mac/Linux
 source venv/bin/activate
-```
 
 ### 3. Install dependencies
-```bash
 pip install -r requirements.txt
-```
 
-### 4. Add your HuggingFace token
-Edit `.env`:
-```
-HUGGINGFACE_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxx
-```
-Get your token at: https://huggingface.co/settings/tokens
-(Read access is enough)
+### 4. Add Hugging Face Token
+Create/Edit `.env` file:
 
-### 5. Run the app
-```bash
+HUGGINGFACE_TOKEN=your_token_here
+
+Get token from:
+https://huggingface.co/settings/tokens
+
+### 5. Run the application
 uvicorn main:app --reload
-```
 
 ### 6. Open in browser
-```
 http://localhost:8000
-```
 
 ---
 
-## Pages
+## 🌐 Pages
 
-| Page | URL | What it does |
-|---|---|---|
-| Upload Notes | `/` | Upload PDF, TXT, DOCX files |
-| Ask AI | `/ask` | Chat with AI about your notes |
-| Quizzes | `/quizzes` | Generate MCQ quizzes from notes |
+| Page | URL | Description |
+|------|-----|------------|
+| Upload Notes | / | Upload study materials |
+| Ask AI | /ask | Ask questions from notes |
+| Quiz | /quizzes | Generate quizzes |
 
-## API Endpoints
+---
+
+## 🔗 API Endpoints
 
 | Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/notes/upload` | Upload a note file |
-| GET | `/api/notes/` | List all notes |
-| DELETE | `/api/notes/{id}` | Delete a note |
-| POST | `/api/chat/ask` | Ask a question |
-| POST | `/api/chat/quiz` | Generate a quiz |
-| POST | `/api/chat/explain` | Explain a quiz answer |
+|--------|----------|------------|
+| POST | /api/notes/upload | Upload a note |
+| GET | /api/notes/ | Get all notes |
+| DELETE | /api/notes/{id} | Delete note |
+| POST | /api/chat/ask | Ask question |
+| POST | /api/chat/quiz | Generate quiz |
+| POST | /api/chat/explain | Explain answer |
 
 ---
 
-## Tech Stack
+## 🧠 Tech Stack
 
-- **Backend** — Python, FastAPI
-- **Vector Search** — FAISS (faiss-cpu)
-- **Embeddings** — sentence-transformers (all-MiniLM-L6-v2) — runs locally, free
-- **LLM** — Mistral-7B-Instruct via HuggingFace Inference API — free tier
-- **Database** — SQLite via SQLAlchemy
-- **Frontend** — Vanilla HTML, CSS, JS (no framework needed)
+Backend:
+- Python
+- FastAPI
+- Uvicorn
+
+AI / ML:
+- Mistral-7B-Instruct (via Hugging Face)
+- sentence-transformers (all-MiniLM-L6-v2)
+- Retrieval-Augmented Generation (RAG)
+
+Vector Search:
+- FAISS (faiss-cpu)
+
+Database:
+- SQLite
+- SQLAlchemy
+
+Frontend:
+- HTML
+- CSS
+- JavaScript
+
+Tools & Deployment:
+- Git & GitHub
+- Render
+- dotenv (.env for secrets)
+
+---
+
+## 🧩 How It Works
+
+1. Upload notes
+2. Text is extracted and chunked
+3. Converted into embeddings
+4. Stored in FAISS
+5. User asks a question
+6. Relevant chunks retrieved
+7. Sent to LLM → Answer generated
