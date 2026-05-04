@@ -1,147 +1,157 @@
-# 📚 StudyMate AI
+# 📚 StudyMate AI – Smart Learning Assistant
 
-An AI-powered smart study assistant that allows students to upload notes, ask questions, and generate quizzes using Retrieval-Augmented Generation (RAG).
+## Overview
 
----
-
-## 🚀 Features
-
-- 📄 Upload study materials (PDF, DOCX, TXT)
-- 🤖 Ask questions from your notes
-- 🧠 Context-aware AI answers (RAG-based)
-- 📝 Automatic quiz generation
-- 💬 Conversational learning assistant
+StudyMate AI is an AI-powered educational assistant that transforms static study materials into an interactive learning experience. It allows users to upload notes, ask questions, generate quizzes, and receive intelligent, context-aware explanations using advanced AI and semantic retrieval techniques.
 
 ---
 
-## 📁 Project Structure
+## Features
 
-studymate/
-├── main.py
-├── requirements.txt
-├── .env
+### Document Upload & Processing
+- Supports PDF, DOCX, and TXT files  
+- Extracts and processes text automatically  
+
+### AI Question Answering
+- Ask questions from uploaded notes  
+- Get contextual and accurate answers  
+
+### Semantic Retrieval
+- Uses vector embeddings for intelligent search  
+- Retrieves relevant content based on meaning  
+
+### Automatic Quiz Generation
+- Generates quizzes from study materials  
+- Helps in revision and self-assessment  
+
+### Conversational Assistant
+- Supports follow-up questions  
+- Acts like a virtual tutor  
+
+---
+
+## Tech Stack
+
+### Backend
+- Python  
+- FastAPI  
+
+### AI / ML
+- Llama 3.1 8B Instruct  
+- Hugging Face Transformers  
+- Sentence Transformers (all-MiniLM-L6-v2)  
+
+### Retrieval
+- FAISS (Vector Database)  
+
+### Database
+- SQLite  
+
+### Document Processing
+- PyPDF  
+- python-docx  
+
+### Deployment
+- Render (Cloud Platform)  
+
+---
+
+## Project Structure
+
+```
+studymate-ai/
 │
 ├── backend/
 │   ├── models/
-│   │   └── database.py
 │   ├── routers/
-│   │   ├── notes.py
-│   │   └── chat.py
 │   ├── services/
-│   │   ├── vector_store.py
-│   │   └── llm_service.py
-│   └── utils/
-│       └── text_extractor.py
+│   ├── utils/
+│
+├── data/
+│   ├── index/
+│   ├── uploads/
+│   └── studymate.db
 │
 ├── frontend/
-│   ├── styles/
-│   │   └── main.css
-│   └── pages/
-│       ├── index.html
-│       ├── ask.html
-│       └── quiz.html
+│   ├── pages/
+│   └── styles/
 │
-└── data/
-    ├── uploads/
-    ├── index/
-    └── studymate.db
+├── main.py
+├── requirements.txt
+├── .env
+```
 
 ---
 
-## ⚙️ Setup Instructions
+## Installation & Setup
 
-### 1. Clone the repository
-git clone <your-repo-url>
-cd studymate
+### Clone the Repository
+```
+git clone https://github.com/Manjari2605/Studymate.git
+cd studymate-ai
+```
 
-### 2. Create virtual environment
-python -m venv venv
+### Create Virtual Environment
+```
+python -m venv myenv
+
+# Linux/Mac
+source myenv/bin/activate  
 
 # Windows
-venv\Scripts\activate
+myenv\Scripts\activate
+```
 
-# Mac/Linux
-source venv/bin/activate
-
-### 3. Install dependencies
+### Install Dependencies
+```
 pip install -r requirements.txt
+```
 
-### 4. Add Hugging Face Token
-Create/Edit `.env` file:
+### Configure Environment Variables
 
-HUGGINGFACE_TOKEN=your_token_here
+Create a `.env` file and add:
+```
+HUGGINGFACE_API_KEY=your_api_key_here
+```
 
-Get token from:
-https://huggingface.co/settings/tokens
+---
 
-### 5. Run the application
+## Run the Application
+
+```
 uvicorn main:app --reload
+```
 
-### 6. Open in browser
-http://localhost:8000
-
----
-
-## 🌐 Pages
-
-| Page | URL | Description |
-|------|-----|------------|
-| Upload Notes | / | Upload study materials |
-| Ask AI | /ask | Ask questions from notes |
-| Quiz | /quizzes | Generate quizzes |
+Open in browser:
+```
+http://127.0.0.1:8000
+```
 
 ---
 
-## 🔗 API Endpoints
+## Deployment
 
-| Method | Endpoint | Description |
-|--------|----------|------------|
-| POST | /api/notes/upload | Upload a note |
-| GET | /api/notes/ | Get all notes |
-| DELETE | /api/notes/{id} | Delete note |
-| POST | /api/chat/ask | Ask question |
-| POST | /api/chat/quiz | Generate quiz |
-| POST | /api/chat/explain | Explain answer |
+This project is deployed using Render.
 
----
-
-## 🧠 Tech Stack
-
-Backend:
-- Python
-- FastAPI
-- Uvicorn
-
-AI / ML:
-- Mistral-7B-Instruct (via Hugging Face)
-- sentence-transformers (all-MiniLM-L6-v2)
-- Retrieval-Augmented Generation (RAG)
-
-Vector Search:
-- FAISS (faiss-cpu)
-
-Database:
-- SQLite
-- SQLAlchemy
-
-Frontend:
-- HTML
-- CSS
-- JavaScript
-
-Tools & Deployment:
-- Git & GitHub
-- Render
-- dotenv (.env for secrets)
+### Steps:
+1. Create a new Web Service on Render  
+2. Connect GitHub repository  
+3. Set build command:
+```
+pip install -r requirements.txt
+```
+4. Set start command:
+```
+uvicorn main:app --host 0.0.0.0 --port 10000
+```
+5. Add environment variables (.env values)  
 
 ---
 
-## 🧩 How It Works
+## Use Cases
 
-1. Upload notes
-2. Text is extracted and chunked
-3. Converted into embeddings
-4. Stored in FAISS
-5. User asks a question
-6. Relevant chunks retrieved
-7. Sent to LLM → Answer generated
+- Exam preparation  
+- Concept understanding  
+- Automated revision  
+- Self-assessment through quizzes  
+- Personalized learning assistant  
